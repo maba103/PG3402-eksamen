@@ -2,6 +2,7 @@ package user_service;
 
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users")
@@ -22,7 +23,7 @@ public class UserController {
         return userService.getUserById(id);
     }
     @PostMapping
-    public User createUser(@RequestBody user_service.User user) {
+    public User createUser(@Valid @RequestBody user_service.User user) {
         return userService.createUser(user);
     }
     @DeleteMapping("/{id}")
