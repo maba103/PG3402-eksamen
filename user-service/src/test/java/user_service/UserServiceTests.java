@@ -71,4 +71,26 @@ class UserServiceTests {
         assertThrows(jakarta.validation.ConstraintViolationException.class,
                 () -> userService.createUser(user));
     }
+
+    @Test
+    void shouldRejectDuplicateEmail() {
+        User user1 = new User();
+        user1.setName("User1");
+        user1.setEmail("user1@mail.com");
+        user1.setRole(UserRole.HOMEOWNER);
+        user1.setPassword("password123");
+
+        userService.createUser(user1);
+
+        User user2 = new User();
+        user2.setName("User2");
+        user2.setEmail("user1@mail.com");
+        user2.setRole(UserRole.CONTRACTOR);
+        user2.setPassword("password456");
+
+        assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> userService.createUser(user2)
+        );
+    }
 }
