@@ -1,4 +1,3 @@
-
 package user_service;
 
 import jakarta.persistence.Entity;
@@ -14,6 +13,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 
 @Entity
 @Table(name = "users")
@@ -32,7 +33,8 @@ public class User {
     @Email(message = "Email must be valid")
     private String email;
 
-    @NotNull(message = "a roll is required!")
+    @NotNull(message = "Roll is required!")
+    @Enumerated(EnumType.STRING)
     private UserRole role;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
