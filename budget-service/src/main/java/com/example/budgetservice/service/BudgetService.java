@@ -1,8 +1,10 @@
 package com.example.budgetservice.service;
 
+import com.example.budgetservice.event.BudgetEvent;
 import com.example.budgetservice.exception.BadRequestException;
 import com.example.budgetservice.exception.ConflictException;
 import com.example.budgetservice.exception.NotFoundException;
+import com.example.budgetservice.messaging.BudgetEventPublisher;
 import com.example.budgetservice.model.Budget;
 import com.example.budgetservice.model.Expense;
 import com.example.budgetservice.repository.BudgetRepository;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -18,12 +21,15 @@ public class BudgetService {
 
     private final BudgetRepository budgetRepository;
     private final ExpenseRepository expenseRepository;
+    private final BudgetEventPublisher eventPublisher;
 
-    public BudgetService(BudgetRepository budgetRepository, ExpenseRepository expenseRepository) {
+    public BudgetService(BudgetRepository budgetRepository,
+                         ExpenseRepository expenseRepository,
+                         BudgetEventPublisher eventPublisher) {
         this.budgetRepository = budgetRepository;
         this.expenseRepository = expenseRepository;
+        this.eventPublisher = eventPublisher;
     }
-
 
     public Budget createBudget(Long projectId, BigDecimal totalAmount) {
         if (projectId == null || projectId <= 0) {
@@ -35,8 +41,11 @@ public class BudgetService {
         if (budgetRepository.existsByProjectId(projectId)) {
             throw new ConflictException("Project " + projectId + " already has a budget");
         }
-        Budget budget = new Budget(projectId, totalAmount);
-        return budgetRepository.save(budget);
+        Budget budget = budgetRepository.save(new Budget(projectId, totalAmount));
+
+        sendEvent("budget.created", budget,
+                "Budget of " + totalAmount + " " + budget.getCurrency() + " created for project " + projectId);
+        return budget;
     }
 
     public List<Budget> getAllBudgets() {
@@ -68,8 +77,22 @@ public class BudgetService {
             throw new BadRequestException("amount is required and must be greater than 0");
         }
         Budget budget = getBudget(budgetId);
+        String statusBefore = budget.getStatus();
+
         budget.addExpense(expense);
-        return expenseRepository.save(expense);
+        Expense saved = expenseRepository.save(expense);
+
+        String statusAfter = budget.getStatus();
+        if (rank(statusAfter) > rank(statusBefore)) {
+            if (statusAfter.equals("EXCEEDED")) {
+                sendEvent("budget.exceeded", budget, "Project " + budget.getProjectId()
+                        + " is over budget: " + budget.getPercentUsed() + "% used");
+            } else {
+                sendEvent("budget.warning", budget, "Project " + budget.getProjectId()
+                        + " has used " + budget.getPercentUsed() + "% of its budget");
+            }
+        }
+        return saved;
     }
 
     public List<Expense> getExpenses(Long budgetId) {
@@ -84,5 +107,27 @@ public class BudgetService {
                 .orElseThrow(() -> new NotFoundException(
                         "Expense " + expenseId + " not found in budget " + budgetId));
         budget.removeExpense(expense);
+    }
+
+    private int rank(String status) {
+        return switch (status) {
+            case "EXCEEDED" -> 2;
+            case "WARNING" -> 1;
+            default -> 0;
+        };
+    }
+
+    private void sendEvent(String type, Budget budget, String message) {
+        eventPublisher.publish(new BudgetEvent(
+                type,
+                budget.getId(),
+                budget.getProjectId(),
+                budget.getTotalAmount(),
+                budget.getSpentAmount(),
+                budget.getPercentUsed(),
+                budget.getCurrency(),
+                budget.getStatus(),
+                message,
+                Instant.now()));
     }
 }
