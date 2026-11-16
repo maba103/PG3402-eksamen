@@ -20,6 +20,10 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public List<User> getUsersByRole (UserRole role) {
+        return userRepository.findByRole(role);
+    }
+
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -28,6 +32,16 @@ public class UserService {
     public User createUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
+    }
+
+    public User updateUser(Long id, User updatedUser) {
+        User existingUser = getUserById(id);
+
+        existingUser.setName(updatedUser.getName());
+        existingUser.setEmail(updatedUser.getEmail());
+        existingUser.setRole(updatedUser.getRole());
+
+        return userRepository.save(existingUser);
     }
 
     public void deleteUser(Long id) {

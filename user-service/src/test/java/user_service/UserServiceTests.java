@@ -17,6 +17,7 @@ class UserServiceTests {
         User user = new User();
         user.setName("XYZ");
         user.setEmail("xyz@mail.com");
+        user.setRole(UserRole.HOMEOWNER);
         user.setPassword("passwordxyz");
 
         User savedUser = userService.createUser(user);
@@ -32,6 +33,7 @@ class UserServiceTests {
         User user = new User();
         user.setName("ABC");
         user.setEmail("abc@mail.com");
+        user.setRole(UserRole.HOMEOWNER);
         user.setPassword("passwordabc");
 
         User savedUser = userService.createUser(user);
@@ -47,6 +49,7 @@ class UserServiceTests {
         User user = new User();
         user.setName("123");
         user.setEmail("123@mail.com");
+        user.setRole(UserRole.HOMEOWNER);
         user.setPassword("password123");
 
         User savedUser = userService.createUser(user);
@@ -61,6 +64,7 @@ class UserServiceTests {
         User user = new User();
         user.setName("XYZ");
         user.setEmail("no-email");
+        user.setRole(UserRole.HOMEOWNER);
         user.setPassword("password123");
 
         assertThrows(jakarta.validation.ConstraintViolationException.class,
