@@ -14,9 +14,8 @@ services:
 
   api-gateway:
     build:
-      context: .
+      context: ./api-gateway
       dockerfile: Dockerfile
-    container_name: api-gateway
     ports:
       - "8080:8080"
     environment:
@@ -26,7 +25,6 @@ services:
       consul:
         condition: service_healthy
 
-  # ---------------- Kafka (felles for alle tjenester) ----------------
   kafka:
     image: apache/kafka:latest
     container_name: kafka
@@ -48,9 +46,8 @@ services:
       timeout: 10s
       retries: 10
 
-  # ---------------- budget-service ----------------
   budget-db:
-    image: postgres:16
+    image: postgres:17
     container_name: budget-db
     environment:
       POSTGRES_DB: budgetdb
@@ -62,17 +59,16 @@ services:
       - budget-db-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U budget -d budgetdb"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
 
   budget-service:
     build:
       context: ./budget-service
-    container_name: budget-service
-    ports:
-      - "8084:8084"
+      dockerfile: Dockerfile
     environment:
+      SERVER_PORT: "8084"
       DB_URL: jdbc:postgresql://budget-db:5432/budgetdb
       DB_USERNAME: budget
       DB_PASSWORD: budget
