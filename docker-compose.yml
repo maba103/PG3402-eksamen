@@ -63,7 +63,6 @@ services:
       timeout: 5s
       retries: 5
 
-
   budget-service:
     build:
       context: ./budget-service
@@ -85,7 +84,6 @@ services:
         condition: service_healthy
       consul:
         condition: service_healthy
-
 
 volumes:
   budget-db-data:
