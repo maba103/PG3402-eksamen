@@ -1,5 +1,7 @@
 package com.example.budgetservice.controller;
 
+
+import com.example.budgetservice.dto.UpdateBudgetRequest;
 import com.example.budgetservice.model.Budget;
 import com.example.budgetservice.model.Expense;
 import com.example.budgetservice.service.BudgetService;
@@ -23,8 +25,6 @@ public class BudgetController {
         return "Budget service is running!";
     }
 
-
-    // POST /api/budgets   body: { "projectId": 1, "totalAmount": 50000 }
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Budget createBudget(@RequestBody Budget budget) {
@@ -41,13 +41,16 @@ public class BudgetController {
         return budgetService.getBudget(id);
     }
 
-    // GET /api/budgets/project/1
+    @PutMapping("/{id}")
+    public Budget updateBudget(@PathVariable Long id, @RequestBody UpdateBudgetRequest request) {
+        return budgetService.updateBudget(id, request);
+    }
+
     @GetMapping("/project/{projectId}")
     public Budget getBudgetForProject(@PathVariable Long projectId) {
         return budgetService.getBudgetForProject(projectId);
     }
 
-    // DELETE /api/budgets/4
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteBudget(@PathVariable Long id) {
