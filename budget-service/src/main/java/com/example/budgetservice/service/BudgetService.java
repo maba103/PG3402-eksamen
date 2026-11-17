@@ -1,5 +1,6 @@
 package com.example.budgetservice.service;
 
+import com.example.budgetservice.client.ProjectClient;
 import com.example.budgetservice.dto.UpdateBudgetRequest;
 import com.example.budgetservice.event.BudgetEvent;
 import com.example.budgetservice.exception.BadRequestException;
@@ -23,13 +24,16 @@ public class BudgetService {
     private final BudgetRepository budgetRepository;
     private final ExpenseRepository expenseRepository;
     private final BudgetEventPublisher eventPublisher;
+    private final ProjectClient projectClient;
 
     public BudgetService(BudgetRepository budgetRepository,
                          ExpenseRepository expenseRepository,
-                         BudgetEventPublisher eventPublisher) {
+                         BudgetEventPublisher eventPublisher,
+                         ProjectClient projectClient) {
         this.budgetRepository = budgetRepository;
         this.expenseRepository = expenseRepository;
         this.eventPublisher = eventPublisher;
+        this.projectClient = projectClient;
     }
 
     public Budget createBudget(Long projectId, BigDecimal totalAmount) {
@@ -41,6 +45,10 @@ public class BudgetService {
         }
         if (budgetRepository.existsByProjectId(projectId)) {
             throw new ConflictException("Project " + projectId + " already has a budget");
+        }
+
+        if (!projectClient.projectExists(projectId)) {
+            throw new NotFoundException("Project " + projectId + " does not exist in project-service");
         }
         Budget budget = budgetRepository.save(new Budget(projectId, totalAmount));
 
@@ -116,7 +124,7 @@ public class BudgetService {
     }
 
     public List<Expense> getExpenses(Long budgetId) {
-        getBudget(budgetId); // 404 hvis budsjettet ikke finnes
+        getBudget(budgetId);
         return expenseRepository.findByBudgetIdOrderBySpentDateDesc(budgetId);
     }
 
