@@ -1,6 +1,6 @@
 # budget-service
 
-Kandidattnr.: 34
+Kandidatnr.: 34
 
 Budget-service keeps track of the budget for each renovation project and the expenses that are registered.
 The service calculates how much money has been spent, how much is left, and what status the budget has.
@@ -8,13 +8,13 @@ It also sends alerts to other services via Kafka when a project is close to or o
 
 ## Responsibility
 
-- Each renovation project has one budget with a total amount, a currency default NOK and a warning limit default 80 %.
+- Each renovation project has one budget with a total amount, a currency (default NOK) and a warning limit default (80 %).
 - The project owner can register expenses on a budget, with a description, amount, category and an optional task id.
 - The service calculates how much is spent, how much is left and how many percent is used.
   These values are calculated from the expenses every time, so they are always correct.
 - Each budget has a status:
     - `OK` – below the warning limit
-    - `WARNING` – the warning limit 80 % or more is used
+    - `WARNING` – the warning limit (80 %) or more is used
     - `EXCEEDED` – more than the total amount is spent
 
 ## Communication with other services
@@ -112,6 +112,11 @@ To see the Kafka events:
 ```bash
 docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic budget-events --from-beginning
 ```
+
+## Postman
+
+All requests from the user stories are in `budget-service.postman_collection.json`.
+Import it in Postman and run the requests from top to bottom. Each request has the expected response in its description.
 
 ## Build and run
 

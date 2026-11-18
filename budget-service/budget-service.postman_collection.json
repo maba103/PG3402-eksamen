@@ -1,0 +1,311 @@
+{
+  "info": {
+    "_postman_id": "9f209bee-cb12-428e-b7b8-000474295385",
+    "name": "budget-service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "49704684",
+    "_collection_link": "https://go.postman.co/collection/49704684-9f209bee-cb12-428e-b7b8-000474295385?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "create budget",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"projectId\": 3, \"totalAmount\": 10000 }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/budgets",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "budgets"
+          ]
+        },
+        "description": "Expected: 201 Created, status OK. Sending the same request again gives 409 Conflict."
+      },
+      "response": []
+    },
+    {
+      "name": "add expense",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"description\": \"Tiles for bathroom\", \"amount\": 12000, \"category\": \"MATERIALS\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/budgets/1/expenses",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "budgets",
+            "1",
+            "expenses"
+          ]
+        },
+        "description": "Expected: 201 Created. The expense is added to budget 1 bathroom."
+      },
+      "response": []
+    },
+    {
+      "name": "all budgets, test data",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"description\": \"Tiles for bathroom\", \"amount\": 12000, \"category\": \"MATERIALS\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/budgets",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "budgets"
+          ]
+        },
+        "description": "Expected: 200 OK. Shows the test data: project 1: 35 % used, OK, and project 2: 76 % used, OK."
+      },
+      "response": []
+    },
+    {
+      "name": "budget for project",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"description\": \"Tiles for bathroom\", \"amount\": 12000, \"category\": \"MATERIALS\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/budgets/project/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "budgets",
+            "project",
+            "1"
+          ]
+        },
+        "description": "Expected: 200 OK. Shows the test data: project 1: 35 % used, OK, and project 2: 76 % used, OK."
+      },
+      "response": []
+    },
+    {
+      "name": "expense gives WARNING",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"description\": \"Paint\", \"amount\": 2000, \"category\": \"MATERIALS\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/budgets/2/expenses",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "budgets",
+            "2",
+            "expenses"
+          ]
+        },
+        "description": "201 Created. Budget 2 reaches 80 % and gets status WARNING. A budget.warning event is sent to Kafka."
+      },
+      "response": []
+    },
+    {
+      "name": "expense gives EXCEEDED",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"description\": \"Carpenter\", \"amount\": 15000, \"category\": \"LABOR\" }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/budgets/2/expenses",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "budgets",
+            "2",
+            "expenses"
+          ]
+        },
+        "description": "201 Created. Budget 2 goes over 100 % and gets status EXCEEDED. A budget.exceeded event is sent to Kafka."
+      },
+      "response": []
+    },
+    {
+      "name": "update budget",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"totalAmount\": 60000 }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/budgets/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "budgets",
+            "1"
+          ]
+        },
+        "description": "200 OK. Only totalAmount is changed. If the status gets worse, a Kafka event is sent."
+      },
+      "response": []
+    },
+    {
+      "name": "budget 999 not found",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/budgets/999",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "budgets",
+            "999"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "invalid input",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"totalAmount\": -5 }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/budgets",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "budgets"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Hello",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"totalAmount\": -5 }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/budgets/hello",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "budgets",
+            "hello"
+          ]
+        },
+        "description": "Expected: 200 OK, Budget service is running!"
+      },
+      "response": []
+    }
+  ]
+}
