@@ -142,3 +142,8 @@ docker compose up --build
 - The project is only checked when the budget is created, not for every expense.
 - No currency conversion: each budget has one currency (default NOK).
 - `taskId` on an expense is not checked against task-service.
+
+### Running multiple instances
+docker compose up --build --scale budget-service=2 consul kafka budget-db budget-service api-gateway
+
+Both instances register in Consul, and the gateway distributes requests between them round robin.
