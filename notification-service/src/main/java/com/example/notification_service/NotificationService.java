@@ -11,12 +11,19 @@ public class NotificationService {
     public NotificationService(NotificationRepo notificationRepo) {
         this.notificationRepo = notificationRepo;
     }
+
     public Notification createNotification(Notification notification) {
         return notificationRepo.save(notification);
     }
+
     public List<Notification> getUserNotifications(Long userId) {
         return notificationRepo.findByUserId(userId);
     }
+
+    public List<Notification> getAllNotifications() {
+        return notificationRepo.findAll();
+    }
+
     public void deleteNotification(Long id) {
         notificationRepo.deleteById(id);
     }

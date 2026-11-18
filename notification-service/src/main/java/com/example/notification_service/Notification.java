@@ -19,6 +19,7 @@ public class Notification {
     private Long id;
 
     private Long userId;
+    private Long projectId;
     @Column(nullable = false)
     private String message;
 
