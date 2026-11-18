@@ -35,17 +35,15 @@ public class DataSeeder implements CommandLineRunner {
         }
         LocalDate today = LocalDate.now();
 
-        // P1: sunt budsjett (35 % brukt, status OK)
         Budget project1 = new Budget(1L, new BigDecimal("150000.00"));
-        project1.addExpense(expense("Developer hours, sprint 1", "40000.00", ExpenseCategory.PERSONNEL, 1L, today.minusDays(20)));
-        project1.addExpense(expense("Cloud hosting", "2500.00", ExpenseCategory.SOFTWARE, null, today.minusDays(10)));
-        project1.addExpense(expense("Laptop for new developer", "10000.00", ExpenseCategory.EQUIPMENT, 2L, today.minusDays(5)));
+        project1.addExpense(expense("Tiles for bathroom", "25000.00", ExpenseCategory.MATERIALS, 1L, today.minusDays(20)));
+        project1.addExpense(expense("Plumber, 10 hours", "15000.00", ExpenseCategory.LABOR, 2L, today.minusDays(10)));
+        project1.addExpense(expense("Building permit", "12500.00", ExpenseCategory.PERMITS, null, today.minusDays(5)));
         budgetRepository.save(project1);
 
-        // P2: nær varslingsgrensen (76 % brukt, status OK).
         Budget project2 = new Budget(2L, new BigDecimal("50000.00"));
-        project2.addExpense(expense("Consultant workshop", "30000.00", ExpenseCategory.SERVICES, 3L, today.minusDays(14)));
-        project2.addExpense(expense("Travel to client", "8000.00", ExpenseCategory.TRAVEL, null, today.minusDays(3)));
+        project2.addExpense(expense("Kitchen cabinets", "30000.00", ExpenseCategory.EQUIPMENT, 3L, today.minusDays(14)));
+        project2.addExpense(expense("Electrician, 10 hours", "8000.00", ExpenseCategory.LABOR, null, today.minusDays(3)));
         budgetRepository.save(project2);
 
         log.info("Inserted test data: budgets for project 1 and project 2");

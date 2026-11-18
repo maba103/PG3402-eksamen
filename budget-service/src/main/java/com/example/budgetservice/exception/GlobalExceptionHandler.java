@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ProblemDetail handleUnreadable(HttpMessageNotReadableException ex) {
         return problem(HttpStatus.BAD_REQUEST, "Malformed request body",
-                "Body is missing or not valid JSON. Valid categories: PERSONNEL, EQUIPMENT, SOFTWARE, TRAVEL, SERVICES, OTHER");
+                "Body is missing or not valid JSON. Valid categories: MATERIALS, LABOR, TOOLS, EQUIPMENT, PERMITS, OTHER");
     }
 
     private ProblemDetail problem(HttpStatus status, String title, String detail) {
