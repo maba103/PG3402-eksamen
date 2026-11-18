@@ -1,3 +1,4 @@
+
 services:
   consul:
     image: hashicorp/consul:1.21
@@ -46,6 +47,22 @@ services:
       timeout: 10s
       retries: 10
 
+  notification-service-db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: notificationdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - notification-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d notificationdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   budget-db:
     image: postgres:17
     container_name: budget-db
@@ -62,6 +79,66 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  user-service-db:
+    image: postgres:17
+    container_name: user-service-db
+    environment:
+      POSTGRES_DB: userdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d userdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-service-db:5432/userdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SERVER_PORT: "8081"
+      CONSUL_HOST: consul
+      CONSUL_PORT: "8500"
+    ports:
+      - "8081:8081"
+    depends_on:
+      user-service-db:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://notification-service-db:5432/notificationdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      CONSUL_ENABLED: "true"
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: "8500"
+    ports:
+      - "8083:8083"
+    depends_on:
+      notification-service-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
 
   budget-service:
     build:
@@ -87,3 +164,5 @@ services:
 
 volumes:
   budget-db-data:
+  notification-db-data:
+  user-db-data:
