@@ -17,4 +17,8 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleInvalid(InvalidTaskException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
+    @ExceptionHandler(ProjectServiceUnavailableException.class)
+    public ProblemDetail handleUnavailable(ProjectServiceUnavailableException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+    }
 }
