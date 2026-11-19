@@ -226,8 +226,20 @@ services:
       DB_URL: jdbc:postgresql://task-db:5432/taskdb
       DB_USERNAME: task
       DB_PASSWORD: task
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      CONSUL_ENABLED: "true"
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      PROJECT_VALIDATION_ENABLED: "false"
+      PROJECT_SERVICE_URL: http://project-service:8085
+    ports:
+       - "8082:8082"
     depends_on:
       task-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      consul:
         condition: service_healthy
 
 volumes:

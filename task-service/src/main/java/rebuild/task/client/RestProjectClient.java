@@ -21,7 +21,7 @@ public class RestProjectClient implements ProjectClient {
     public boolean projectExists(Long projectId) {
         try {
             return restClient.get()
-                    .uri("/projects/{id}", projectId)
+                    .uri("/api/projects/{id}", projectId)
                     .exchange((request, response) -> response.getStatusCode().is2xxSuccessful());
         } catch (RestClientException e) {
             throw new ProjectServiceUnavailableException("project-service is not reachable");
