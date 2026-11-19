@@ -153,7 +153,7 @@ services:
       CONSUL_ENABLED: "true"
       CONSUL_HOST: consul
       CONSUL_PORT: 8500
-      PROJECT_VALIDATION_ENABLED: "false"
+      PROJECT_VALIDATION_ENABLED: "true"
     depends_on:
       budget-db:
         condition: service_healthy
@@ -161,6 +161,8 @@ services:
         condition: service_healthy
       consul:
         condition: service_healthy
+      project-service:
+        condition: service_started
   project-service-db:
     image: postgres:17
     environment:
