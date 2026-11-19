@@ -23,6 +23,13 @@ spring:
         health-check-path: /actuator/health
         health-check-interval: 10s
         health-check-critical-timeout: 1m
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        max.block.ms: 5000
 
 server:
   port: ${SERVER_PORT:8085}
@@ -35,3 +42,7 @@ management:
   endpoint:
     health:
       show-details: always
+
+project:
+  messaging:
+    topic: project-events

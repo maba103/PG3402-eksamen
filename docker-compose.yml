@@ -191,11 +191,15 @@ services:
       CONSUL_ENABLED: "true"
       CONSUL_HOST: consul
       CONSUL_PORT: "8500"
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
     depends_on:
       project-service-db:
         condition: service_healthy
       consul:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
+
 volumes:
   budget-db-data:
   notification-db-data:

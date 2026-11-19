@@ -1,5 +1,8 @@
 package no.rebuild.projectservice.service;
 
+import no.rebuild.projectservice.event.ProjectEvent;
+import no.rebuild.projectservice.messaging.ProjectEventPublisher;
+import java.time.Instant;
 import no.rebuild.projectservice.client.BudgetClient;
 import no.rebuild.projectservice.dto.BudgetAvailability;
 import no.rebuild.projectservice.dto.BudgetInfo;
@@ -25,10 +28,14 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final BudgetClient budgetClient;
+    private final ProjectEventPublisher eventPublisher;
 
-    public ProjectService(ProjectRepository projectRepository, BudgetClient budgetClient) {
+    public ProjectService(ProjectRepository projectRepository,
+                          BudgetClient budgetClient,
+                          ProjectEventPublisher eventPublisher) {
         this.projectRepository = projectRepository;
         this.budgetClient = budgetClient;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -82,6 +89,14 @@ public class ProjectService {
     public void deleteProject(Long id) {
         Project project = findProject(id);
         projectRepository.delete(project);
+
+        eventPublisher.publish(new ProjectEvent(
+                "PROJECT_DELETED",
+                project.getId(),
+                project.getName(),
+                project.getOwnerId(),
+                Instant.now()
+        ));
     }
 
     private Project findProject(Long id) {
