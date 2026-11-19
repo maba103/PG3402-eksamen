@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -40,13 +39,13 @@ public class DataSeeder implements CommandLineRunner {
 
         projectRepository.saveAll(List.of(
                 project("Bathroom renovation", "New tiles, plumbing and shower",
-                        "Storgata 1, Oslo", 1L, "150000", ProjectStatus.IN_PROGRESS,
+                        "Storgata 1, Oslo", 1L, ProjectStatus.IN_PROGRESS,
                         LocalDate.of(2026, 10, 15), LocalDate.of(2026, 12, 20)),
                 project("Kitchen renovation", "New cabinets and electrical work",
-                        "Storgata 1, Oslo", 1L, "50000", ProjectStatus.IN_PROGRESS,
+                        "Storgata 1, Oslo", 1L, ProjectStatus.IN_PROGRESS,
                         LocalDate.of(2026, 11, 1), LocalDate.of(2027, 1, 15)),
                 project("Terrace", "New wooden terrace with railing",
-                        "Bygdøy allé 12, Oslo", 2L, "60000", ProjectStatus.PLANNED,
+                        "Bygdøy allé 12, Oslo", 2L, ProjectStatus.PLANNED,
                         LocalDate.of(2027, 4, 1), LocalDate.of(2027, 5, 15))
         ));
 
@@ -54,14 +53,12 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private Project project(String name, String description, String address, Long ownerId,
-                            String budgetLimit, ProjectStatus status,
-                            LocalDate startDate, LocalDate endDate) {
+                            ProjectStatus status, LocalDate startDate, LocalDate endDate) {
         Project project = new Project();
         project.setName(name);
         project.setDescription(description);
         project.setAddress(address);
         project.setOwnerId(ownerId);
-        project.setBudgetLimit(new BigDecimal(budgetLimit));
         project.setStatus(status);
         project.setStartDate(startDate);
         project.setEndDate(endDate);
