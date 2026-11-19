@@ -109,7 +109,6 @@ public class ProjectService {
         project.setDescription(request.description());
         project.setAddress(request.address());
         project.setOwnerId(request.ownerId());
-        project.setBudgetLimit(request.budgetLimit());
         project.setStartDate(request.startDate());
         project.setEndDate(request.endDate());
         if (request.status() != null) {
