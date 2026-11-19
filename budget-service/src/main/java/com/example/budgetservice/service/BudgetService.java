@@ -106,6 +106,14 @@ public class BudgetService {
     }
 
     @Transactional
+    public boolean deleteBudgetForProject(Long projectId) {
+        return budgetRepository.findByProjectId(projectId).map(budget -> {
+            budgetRepository.delete(budget);
+            return true;
+        }).orElse(false);
+    }
+
+    @Transactional
     public Expense addExpense(Long budgetId, Expense expense) {
         if (expense.getDescription() == null || expense.getDescription().isBlank()) {
             throw new BadRequestException("description is required");
