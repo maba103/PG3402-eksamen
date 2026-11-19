@@ -1,10 +1,10 @@
 package com.example.budgetservice.model;
 
 public enum ExpenseCategory {
-    PERSONNEL,
+    MATERIALS,
+    LABOR,
+    TOOLS,
     EQUIPMENT,
-    SOFTWARE,
-    TRAVEL,
-    SERVICES,
+    PERMITS,
     OTHER
 }

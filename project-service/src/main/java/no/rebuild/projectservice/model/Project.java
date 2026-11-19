@@ -1,7 +1,6 @@
 package no.rebuild.projectservice.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -23,8 +22,6 @@ public class Project {
 
     @Column(nullable = false)
     private Long ownerId;
-
-    private BigDecimal budgetLimit;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -85,14 +82,6 @@ public class Project {
 
     public void setOwnerId(Long ownerId) {
         this.ownerId = ownerId;
-    }
-
-    public BigDecimal getBudgetLimit() {
-        return budgetLimit;
-    }
-
-    public void setBudgetLimit(BigDecimal budgetLimit) {
-        this.budgetLimit = budgetLimit;
     }
 
     public ProjectStatus getStatus() {

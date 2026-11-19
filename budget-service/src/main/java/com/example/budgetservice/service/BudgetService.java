@@ -1,5 +1,6 @@
 package com.example.budgetservice.service;
 
+import com.example.budgetservice.config.BudgetSettings;
 import com.example.budgetservice.client.ProjectClient;
 import com.example.budgetservice.dto.UpdateBudgetRequest;
 import com.example.budgetservice.event.BudgetEvent;
@@ -25,15 +26,18 @@ public class BudgetService {
     private final ExpenseRepository expenseRepository;
     private final BudgetEventPublisher eventPublisher;
     private final ProjectClient projectClient;
+    private final BudgetSettings settings;
 
     public BudgetService(BudgetRepository budgetRepository,
                          ExpenseRepository expenseRepository,
                          BudgetEventPublisher eventPublisher,
-                         ProjectClient projectClient) {
+                         ProjectClient projectClient,
+                         BudgetSettings settings) {
         this.budgetRepository = budgetRepository;
         this.expenseRepository = expenseRepository;
         this.eventPublisher = eventPublisher;
         this.projectClient = projectClient;
+        this.settings = settings;
     }
 
     public Budget createBudget(Long projectId, BigDecimal totalAmount) {
@@ -50,7 +54,10 @@ public class BudgetService {
         if (!projectClient.projectExists(projectId)) {
             throw new NotFoundException("Project " + projectId + " does not exist in project-service");
         }
-        Budget budget = budgetRepository.save(new Budget(projectId, totalAmount));
+
+        Budget newBudget = new Budget(projectId, totalAmount);
+        newBudget.setWarningThresholdPercent(settings.getWarningThreshold());
+        Budget budget = budgetRepository.save(newBudget);
 
         sendEvent("budget.created", budget,
                 "Budget of " + totalAmount + " " + budget.getCurrency() + " created for project " + projectId);
@@ -103,6 +110,14 @@ public class BudgetService {
     @Transactional
     public void deleteBudget(Long id) {
         budgetRepository.delete(getBudget(id));
+    }
+
+    @Transactional
+    public boolean deleteBudgetForProject(Long projectId) {
+        return budgetRepository.findByProjectId(projectId).map(budget -> {
+            budgetRepository.delete(budget);
+            return true;
+        }).orElse(false);
     }
 
     @Transactional

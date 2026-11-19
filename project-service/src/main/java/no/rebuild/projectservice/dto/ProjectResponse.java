@@ -3,7 +3,6 @@ package no.rebuild.projectservice.dto;
 import no.rebuild.projectservice.model.Project;
 import no.rebuild.projectservice.model.ProjectStatus;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -13,7 +12,6 @@ public record ProjectResponse(
         String description,
         String address,
         Long ownerId,
-        BigDecimal budgetLimit,
         ProjectStatus status,
         LocalDate startDate,
         LocalDate endDate,
@@ -27,7 +25,6 @@ public record ProjectResponse(
                 project.getDescription(),
                 project.getAddress(),
                 project.getOwnerId(),
-                project.getBudgetLimit(),
                 project.getStatus(),
                 project.getStartDate(),
                 project.getEndDate(),

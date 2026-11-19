@@ -17,10 +17,17 @@ public class NotificationController {
     public Notification createNotification(@RequestBody Notification notification) {
         return notificationService.createNotification(notification);
     }
+
+    @GetMapping
+    public List<Notification> getAllNotifications() {
+        return notificationService.getAllNotifications();
+    }
+
     @GetMapping("/user/{userId}")
     public List<Notification> getUserNotifications(@PathVariable Long userId) {
         return notificationService.getUserNotifications(userId);
     }
+
     @DeleteMapping("/{id}")
     public void deleteNotification(@PathVariable Long id) {
         notificationService.deleteNotification(id);

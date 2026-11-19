@@ -2,11 +2,9 @@ package no.rebuild.projectservice.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import no.rebuild.projectservice.model.ProjectStatus;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record ProjectRequest(
@@ -22,9 +20,6 @@ public record ProjectRequest(
 
         @NotNull(message = "Owner id is required")
         Long ownerId,
-
-        @PositiveOrZero(message = "Budget limit cannot be negative")
-        BigDecimal budgetLimit,
 
         ProjectStatus status,
 

@@ -1,5 +1,15 @@
 package no.rebuild.projectservice.service;
 
+import no.rebuild.projectservice.event.ProjectEvent;
+import no.rebuild.projectservice.messaging.ProjectEventPublisher;
+import java.time.Instant;
+import no.rebuild.projectservice.client.BudgetClient;
+import no.rebuild.projectservice.dto.BudgetAvailability;
+import no.rebuild.projectservice.dto.BudgetInfo;
+import no.rebuild.projectservice.dto.ProjectSummaryResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.client.HttpClientErrorException;
 import no.rebuild.projectservice.dto.ProjectRequest;
 import no.rebuild.projectservice.dto.ProjectResponse;
 import no.rebuild.projectservice.exception.InvalidProjectException;
@@ -14,10 +24,18 @@ import java.util.List;
 @Service
 public class ProjectService {
 
-    private final ProjectRepository projectRepository;
+    private static final Logger log = LoggerFactory.getLogger(ProjectService.class);
 
-    public ProjectService(ProjectRepository projectRepository) {
+    private final ProjectRepository projectRepository;
+    private final BudgetClient budgetClient;
+    private final ProjectEventPublisher eventPublisher;
+
+    public ProjectService(ProjectRepository projectRepository,
+                          BudgetClient budgetClient,
+                          ProjectEventPublisher eventPublisher) {
         this.projectRepository = projectRepository;
+        this.budgetClient = budgetClient;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -45,6 +63,20 @@ public class ProjectService {
         return ProjectResponse.from(findProject(id));
     }
 
+    public ProjectSummaryResponse getProjectSummary(Long id) {
+        ProjectResponse project = ProjectResponse.from(findProject(id));
+
+        try {
+            BudgetInfo budget = budgetClient.getBudgetForProject(id);
+            return new ProjectSummaryResponse(project, BudgetAvailability.AVAILABLE, budget);
+        } catch (HttpClientErrorException.NotFound e) {
+            return new ProjectSummaryResponse(project, BudgetAvailability.NOT_REGISTERED, null);
+        } catch (RuntimeException e) {
+            log.warn("Could not reach budget-service for project {}: {}", id, e.getMessage());
+            return new ProjectSummaryResponse(project, BudgetAvailability.SERVICE_UNAVAILABLE, null);
+        }
+    }
+
     @Transactional
     public ProjectResponse updateProject(Long id, ProjectRequest request) {
         validateDates(request);
@@ -57,6 +89,14 @@ public class ProjectService {
     public void deleteProject(Long id) {
         Project project = findProject(id);
         projectRepository.delete(project);
+
+        eventPublisher.publish(new ProjectEvent(
+                "PROJECT_DELETED",
+                project.getId(),
+                project.getName(),
+                project.getOwnerId(),
+                Instant.now()
+        ));
     }
 
     private Project findProject(Long id) {
@@ -69,7 +109,6 @@ public class ProjectService {
         project.setDescription(request.description());
         project.setAddress(request.address());
         project.setOwnerId(request.ownerId());
-        project.setBudgetLimit(request.budgetLimit());
         project.setStartDate(request.startDate());
         project.setEndDate(request.endDate());
         if (request.status() != null) {
