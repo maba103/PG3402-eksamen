@@ -1,5 +1,6 @@
 package no.rebuild.projectservice.controller;
 
+import no.rebuild.projectservice.dto.ProjectSummaryResponse;
 import jakarta.validation.Valid;
 import no.rebuild.projectservice.dto.ProjectRequest;
 import no.rebuild.projectservice.dto.ProjectResponse;
@@ -32,6 +33,11 @@ public class ProjectController {
     @GetMapping
     public List<ProjectResponse> getProjects(@RequestParam(required = false) Long ownerId) {
         return projectService.getProjects(ownerId);
+    }
+
+    @GetMapping("/{id}/summary")
+    public ProjectSummaryResponse getProjectSummary(@PathVariable Long id) {
+        return projectService.getProjectSummary(id);
     }
 
     @GetMapping("/{id}")

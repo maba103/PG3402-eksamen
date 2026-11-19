@@ -1,5 +1,12 @@
 package no.rebuild.projectservice.service;
 
+import no.rebuild.projectservice.client.BudgetClient;
+import no.rebuild.projectservice.dto.BudgetAvailability;
+import no.rebuild.projectservice.dto.BudgetInfo;
+import no.rebuild.projectservice.dto.ProjectSummaryResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.client.HttpClientErrorException;
 import no.rebuild.projectservice.dto.ProjectRequest;
 import no.rebuild.projectservice.dto.ProjectResponse;
 import no.rebuild.projectservice.exception.InvalidProjectException;
@@ -14,10 +21,14 @@ import java.util.List;
 @Service
 public class ProjectService {
 
-    private final ProjectRepository projectRepository;
+    private static final Logger log = LoggerFactory.getLogger(ProjectService.class);
 
-    public ProjectService(ProjectRepository projectRepository) {
+    private final ProjectRepository projectRepository;
+    private final BudgetClient budgetClient;
+
+    public ProjectService(ProjectRepository projectRepository, BudgetClient budgetClient) {
         this.projectRepository = projectRepository;
+        this.budgetClient = budgetClient;
     }
 
     @Transactional
@@ -43,6 +54,20 @@ public class ProjectService {
     @Transactional(readOnly = true)
     public ProjectResponse getProject(Long id) {
         return ProjectResponse.from(findProject(id));
+    }
+
+    public ProjectSummaryResponse getProjectSummary(Long id) {
+        ProjectResponse project = ProjectResponse.from(findProject(id));
+
+        try {
+            BudgetInfo budget = budgetClient.getBudgetForProject(id);
+            return new ProjectSummaryResponse(project, BudgetAvailability.AVAILABLE, budget);
+        } catch (HttpClientErrorException.NotFound e) {
+            return new ProjectSummaryResponse(project, BudgetAvailability.NOT_REGISTERED, null);
+        } catch (RuntimeException e) {
+            log.warn("Could not reach budget-service for project {}: {}", id, e.getMessage());
+            return new ProjectSummaryResponse(project, BudgetAvailability.SERVICE_UNAVAILABLE, null);
+        }
     }
 
     @Transactional
