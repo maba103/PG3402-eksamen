@@ -1,6 +1,8 @@
 spring:
   application:
     name: project-service
+  config:
+    import: "optional:consul:"
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/projectdb}
     username: ${DB_USERNAME:rebuild}
@@ -10,10 +12,20 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-
+  cloud:
+    consul:
+      enabled: ${CONSUL_ENABLED:false}
+      host: ${CONSUL_HOST:localhost}
+      port: ${CONSUL_PORT:8500}
+      discovery:
+        instance-id: ${spring.application.name}:${random.value}
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        health-check-critical-timeout: 1m
 
 server:
-  port: 8081
+  port: ${SERVER_PORT:8085}
 
 management:
   endpoints:
