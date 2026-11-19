@@ -1,6 +1,6 @@
 ## Project Service
 
-**Owner** lilliantraan · **Port** 8005 (reached through the gateway) · **Database** PostgreSQL `projetdb`
+**Owner** 57 · **Port** 8005 (reached through the gateway) · **Database** PostgreSQL `projetdb`
 
 Manages renovation projects, and shows a summary of each project together with its budget. It is the only service that 
 stores project data; other services refer to projects by projectId.
