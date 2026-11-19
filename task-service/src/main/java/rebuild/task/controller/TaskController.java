@@ -14,7 +14,7 @@ import java.util.List;
 
 @Tag(name = "Tasks", description = "Operations for renovation tasks")
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/api/tasks")
 public class TaskController {
 
     private final TaskService service;

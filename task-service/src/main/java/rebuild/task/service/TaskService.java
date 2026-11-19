@@ -7,6 +7,7 @@ import rebuild.task.dto.TaskRequest;
 import rebuild.task.dto.TaskResponse;
 import rebuild.task.exception.InvalidTaskException;
 import rebuild.task.exception.TaskNotFoundException;
+import rebuild.task.messaging.TaskEventPublisher;
 import rebuild.task.model.Task;
 import rebuild.task.model.TaskStatus;
 import rebuild.task.repository.TaskRepository;
@@ -18,10 +19,13 @@ public class TaskService {
 
     private final TaskRepository repository;
     private final ProjectClient projectClient;
+    private final TaskEventPublisher eventPublisher;
 
-    public TaskService(TaskRepository repository, ProjectClient projectClient) {
+
+    public TaskService(TaskRepository repository, ProjectClient projectClient,TaskEventPublisher eventPublisher) {
         this.repository = repository;
         this.projectClient = projectClient;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -60,7 +64,9 @@ public class TaskService {
     public TaskResponse updateStatus(Long id, TaskStatus status) {
         Task task = getTask(id);
         task.setStatus(status);
-        return TaskResponse.from(repository.save(task));
+        Task saved = repository.save(task);
+        eventPublisher.publishStatusChanged(saved);
+        return TaskResponse.from(saved);
     }
 
     @Transactional
