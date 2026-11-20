@@ -81,12 +81,12 @@ User service manages users in the application, including homeowners and contract
 - Uses BCrypt to hash passwords
 - Prevents duplicate email addresses
 
-*Technologies:* Java 21, Spring Boot, PostgreSQL, Spring Data JPA, Dcoker, Maven
+**Technologies:** Java 21, Spring Boot, PostgreSQL, Spring Data JPA, Dcoker, Maven
 
-*Endpoints:* "/api/users", "/api/users/{id}", "/api/users/role/{role}"
+**Endpoints:** "/api/users", "/api/users/{id}", "/api/users/role/{role}"
 
-*Port:* 8081
-*Health:* http://localhost:8081/actuator/health
+**Port:** 8081
+**Health:** http://localhost:8081/actuator/health
 
 ### notification-service
 Notification service manages user notification and receives budget warning events through Kafka
@@ -99,8 +99,8 @@ Notification service manages user notification and receives budget warning event
 
 **Endpoints:** "/api/notifications", "/api/notifications/user/{userId}"
 
-*Port:* 8083
-*Health:* 'http://localhost:8083/ctuator/health'
+**Port:** 8083
+**Health:** 'http://localhost:8083/ctuator/health'
 
 ### project-service
 
