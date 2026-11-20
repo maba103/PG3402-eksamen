@@ -146,4 +146,20 @@ Full details, all endpoints, test data and Postman collection: [budget-service/R
 - No frontend. All functionality is tested through the gateway with Postman.
 - Consul runs in development mode. Values in Consul Key/Value are lost when Consul restarts.
 
-## Changes from the arbeidskrav
+## Why Re-Build fits microservices
+
+A renovation involves different parties (homeowner and contractors) and different areas (projects, tasks, budgets, users and notifications). Each area has its own data and changes at its own pace, so each one is a separate service.
+
+### What fits especially well
+
+- Notifications through events. Budget warnings, deleted projects and task updates are sent through Kafka. The sender does not need to know who receives the event.
+- Independent scaling. Expenses and task updates happen often, projects and users rarely. Budget-service and task-service can run in more instances without scaling the rest.
+- Failures stay local. If budget-service is down, project-service still shows the project.
+- Clear data ownership. Each service has its own database. Only budget-service stores the budget amount.
+
+### When the project grows
+
+- New features, such as contractor offers, photo upload and deadline reminders, can be added as new services or new events, without changing the existing ones.
+- More users means more load on budgets and tasks, and those services can be scaled behind the gateway.
+
+For the current size, a monolith would be simpler. The microservice structure pays off as the application grow
