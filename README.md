@@ -67,6 +67,15 @@ API Gateways acts as a single entry points to the application and routes incomin
 - Uses Spring Cloud LoadBalancer to distribute requests between multiple service instances.
 - Provides health monitoring through Spring boot Actuator
 
+**Main User Stories:** 
+- Access users through the Gateway: GET /api/users → 200 OK
+- Access projects through the Gateway: GET /api/projects → 200 OK
+- Access tasks through the Gateway: GET /api/tasks → 200 OK
+- Access budgets through the Gateway: GET /api/budgets → 200 OK
+- Access notifications through the Gateway: GET /api/notifications → 200 OK
+- Gateway health: GET /actuator/health → 200 OK
+- Distribute requests between multiple Budget Service instances through load balancing.
+
 **Endpoints:** /api/users/, /api/projects, /api/tasks, /api/budgets, /api/notifications
 
 **Port:** 8080
