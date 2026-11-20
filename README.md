@@ -1,12 +1,10 @@
 # Re-Build
 
-Re-Build is a microservice application for homeowners who are renovating their home.
-The project owner can create renovation projects, keep track of the budget and expenses,
-plan tasks, and get notifications when something important happens, for example when the budget is close to being used up.
+Re-Build is a platform for homeowners who are renovating their home, and the contractors who do the work.
 
-PG3402 Microservices – exam project.
+The homeowner can create a renovation project, divide it into tasks with deadlines, assign contractors, and follow both the progress and the budget. Contractors update the status of the tasks assigned to them. When something important happens – for example when the budget is close to being used up – the system sends a notification.
 
-Each service has its own README with more details.
+The system is built as microservices: user, project, task, budget and notification services, an API gateway as the single entry point, Consul for service discovery, health checks and configuration, and Kafka for events between the services. Everything runs with one `docker compose up`.
 
 ## Build and run
 
