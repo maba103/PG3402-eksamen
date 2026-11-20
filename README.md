@@ -66,11 +66,31 @@ Each service has its own database, so no service reads another service's data di
 
 
 ### user-service
+User service manages users in the application, including homeowners and contractors.
+- Helps creating, retrieving, updating and deleting users.
+- Uses BCrypt to hash passwords
+- Prevents duplicate email addresses
 
+*Technologies:* Java 21, Spring Boot, PostgreSQL, Spring Data JPA, Dcoker, Maven
 
+*Endpoints:* "/api/users", "/api/users/{id}", "/api/users/role/{role}"
+
+*Port:* 8081
+*Health:* http://localhost:8081/actuator/health
 
 ### notification-service
+Notification service manages user notification and receives budget warning events through Kafka
 
+- It creates creates, retrieves and deletes notifications
+- Retrieves notifications for specific users
+- Stores notifications in PostgreSQL
+
+**Technologies:** Java 21, Spring Boot, PostgreSQL, Kafka, Docker, Maven
+
+**Endpoints:** "/api/notifications", "/api/notifications/user/{userId}"
+
+*Port:* 8083
+*Health:* 'http://localhost:8083/ctuator/health'
 
 ### project-service
 
