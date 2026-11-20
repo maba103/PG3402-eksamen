@@ -104,6 +104,19 @@ Notification service manages user notification and receives budget warning event
 
 ### project-service
 
+### project-service
+Project service manages renovation projects and gives the homeowner an overview of each project together with its budget.
+
+* Creates, retrieves, updates and deletes projects, and lists the projects for a specific owner
+* Validates input, for example that a project has a name and that the end date is not before the start date
+* Combines a project with its budget from budget-service through REST, and still returns the project if budget-service is unavailable
+* Publishes a `PROJECT_DELETED` event through Kafka when a project is deleted, so budget-service can delete the project's budget
+* Creates three test projects on startup, matching the budgets in budget-service
+
+Technologies: Java 21, Spring Boot, PostgreSQL, Spring Data JPA, Kafka, Docker, Maven
+Endpoints: "/api/projects", "/api/projects/{id}", "/api/projects/{id}/summary"
+Port: 8085 (only reachable through the gateway) Health: shown in Consul, http://localhost:8500
+
 
 
 ### budget-service
@@ -123,7 +136,7 @@ flowchart LR
 
 Main user stories:
 
-1. Create a budget for a project: `POST /api/budgets` `{ "projectId": 3, "totalAmount": 60000 }` → `201 Created`
+1. Create a budget for a project: first create a project with `POST /api/projects` `{ "name": "Garden shed", "ownerId": 2 }` → `201 Created` (note the `id`, e.g. `4`), then `POST /api/budgets` `{ "projectId": 4, "totalAmount": 60000 }` → `201 Created`
 2. Get a warning when the budget is almost used: `POST /api/budgets/2/expenses` `{ "description": "Paint", "amount": 2000, "category": "MATERIALS" }` → status `WARNING` and a `budget.warning` event
 3. Cannot create a budget for a project that does not exist: `POST /api/budgets` `{ "projectId": 999, "totalAmount": 1000 }` → `404 Not Found`
 4. The budget is deleted when the project is deleted (`PROJECT_DELETED` from project-service)
