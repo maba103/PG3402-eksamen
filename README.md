@@ -178,8 +178,10 @@ A renovation involves different parties (homeowner and contractors) and differen
 - Failures stay local. If budget-service is down, project-service still shows the project.
 - Clear data ownership. Each service has its own database. Only budget-service stores the budget amount.
 
-### When the project grows
+### Changes from the arbeidskrav and When the project grows
 
+- We went beyond the planned minimum solution and implemented most of the prototype: contractor assignment, budget tracking, notifications and the API gateway.
+  
 - New features, such as contractor offers, photo upload and deadline reminders, can be added as new services or new events, without changing the existing ones.
 - More users means more load on budgets and tasks, and those services can be scaled behind the gateway.
 
