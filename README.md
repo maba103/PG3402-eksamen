@@ -62,8 +62,18 @@ Each service has its own database, so no service reads another service's data di
 ## Services
 
 ### api-gateway
+API Gateways acts as a single entry points to the application and routes incoming requests to the appropriate microservices.
 
+- Routes request to User, Project, Task, Budget and Notification Services.
+- Uses Consul for service discovery instead of fixed service addresses.
+- Uses Spring Cloud LoadBalancer to distribute requests between multiple service instances.
+- Provides health monitoring through Spring boot Actuator
 
+**Endpoints:** /api/users/, /api/projects, /api/tasks, /api/budgets, /api/notifications
+
+**Port:** 8080
+
+**Health:** http://localhost:8080/actuator/health
 
 ### user-service
 User service manages users in the application, including homeowners and contractors.
