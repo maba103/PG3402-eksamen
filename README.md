@@ -48,7 +48,8 @@ flowchart LR
     Kafka -. "budget-events" .-> Notification
     Project -. "project-events" .-> Kafka
     Kafka -. "project-events" .-> Budget
-
+    Task -. "task-events" .-> Kafka
+    Task -. "REST (optional): does the project exist?" .-> Project
     User --> UserDB[(user db)]
     Project --> ProjectDB[(project db)]
     Budget --> BudgetDB[(budget db)]
@@ -105,15 +106,39 @@ Full details, all endpoints, test data and Postman collection: [budget-service/R
 
 ### task-service
 
+Keeps track of the tasks in a renovation project. A task belongs to a project and can be assigned to a contractor. Only the assigned contractor can change the status, and the homeowner can follow the progress of a project. When the status changes, an event is published to Kafka.
 
+```mermaid
+flowchart LR
+    Gateway[api-gateway] --> Task[task-service]
+    Task --> DB[(task-db)]
+    Task -. "REST: does the project exist? (optional)" .-> Project[project-service]
+    Task -. "Kafka: task-events" .-> Notification[notification-service]
+    Consul[Consul] -. "service discovery" .-> Task
+```
+
+Main user stories:
+
+1. Divide a project into tasks: `POST /api/tasks` `{ "projectId": 5, "title": "Living room", "deadline": "2026-12-01" }` → `201 Created` with status `PLANNED`
+2. Assign a contractor to a task: `PATCH /api/tasks/1/contractor?contractorId=3`
+3. The contractor updates the status of an assigned task: `PATCH /api/tasks/1/status?status=COMPLETED&contractorId=3` → `200 OK` and a `TaskCompleted` event on `task-events`
+4. Only the assigned contractor can change the status: the same request with `contractorId=7` → `403 Forbidden`
+5. The homeowner follows the progress of a project: `GET /api/tasks/project/5/progress` → number of tasks per status and the percentage completed
+
+Full details, all endpoints and configuration: [task-service/README.md](task-service/README.md)
 
 ## Decisions, assumptions and simplifications
 
 - One database per service. Services only share data through REST and Kafka.
 - Kafka for events, as in the lectures. Events are plain JSON, so services do not share code, but they must agree on field names such as `projectId`.
 - Budget-service is the only owner of the budget amount. Project-service asks budget-service when it needs the budget, so the numbers are kept in only one place.
-- No login. `ownerId` is sent in the request.
-- No frontend. All functionality is tested through the gateway with Postman.
+- No frontend. All functionality is tested through the gateway with Postman or Swagger.
 - Consul runs in development mode. Values in Consul Key/Value are lost when Consul restarts.
+- No login. `ownerId` and `contractorId` are sent in the request.
+- Only the assigned contractor can change the status of a task. Without a login, the contractor's id is sent as a request parameter, and it is not checked against user-service.
+- Task-service can check that a project exists in project-service (`PROJECT_VALIDATION_ENABLED`). It is off by default, so task-service can be started and tested alone.
+- Task events are published to Kafka after the task is saved, but not in the same transaction. If Kafka is down, the event is lost (a transactional outbox would fix this).
 
 ## Changes from the arbeidskrav
+- Task-service gets a progress endpoint (`GET /api/tasks/project/{id}/progress`), so the homeowner can follow the renovation. This was not in the arbeidskrav.
+- Only the assigned contractor can change the status of a task.
