@@ -1,12 +1,10 @@
 # Re-Build
 
-Re-Build is a microservice application for homeowners who are renovating their home.
-The project owner can create renovation projects, keep track of the budget and expenses,
-plan tasks, and get notifications when something important happens, for example when the budget is close to being used up.
+Re-Build is a platform for homeowners who are renovating their home, and the contractors who do the work.
 
-PG3402 Microservices – exam project.
+The homeowner can create a renovation project, divide it into tasks with deadlines, assign contractors, and follow both the progress and the budget. Contractors update the status of the tasks assigned to them. When something important happens – for example when the budget is close to being used up – the system sends a notification.
 
-Each service has its own README with more details.
+The system is built as microservices: user, project, task, budget and notification services, an API gateway as the single entry point, Consul for service discovery, health checks and configuration, and Kafka for events between the services. Everything runs with one `docker compose up`.
 
 ## Build and run
 
@@ -63,18 +61,80 @@ Each service has its own database, so no service reads another service's data di
 ## Services
 
 ### api-gateway
+API Gateways acts as a single entry points to the application and routes incoming requests to the appropriate microservices.
 
+- Routes request to User, Project, Task, Budget and Notification Services.
+- Uses Consul for service discovery instead of fixed service addresses.
+- Uses Spring Cloud LoadBalancer to distribute requests between multiple service instances.
+- Provides health monitoring through Spring boot Actuator
 
+**Main User Stories:** 
+- Access users through the Gateway: GET /api/users → 200 OK
+- Access projects through the Gateway: GET /api/projects → 200 OK
+- Access tasks through the Gateway: GET /api/tasks → 200 OK
+- Access budgets through the Gateway: GET /api/budgets → 200 OK
+- Access notifications through the Gateway: GET /api/notifications → 200 OK
+- Gateway health: GET /actuator/health → 200 OK
+- Distribute requests between multiple Budget Service instances through load balancing.
+
+**Endpoints:** /api/users/, /api/projects, /api/tasks, /api/budgets, /api/notifications
+
+**Port:** 8080
+
+**Health:** http://localhost:8080/actuator/health
 
 ### user-service
+User service manages users in the application, including homeowners and contractors.
+- Helps creating, retrieving, updating and deleting users.
+- Uses BCrypt to hash passwords
+- Prevents duplicate email addresses
 
+1. create an account : POST /api/users -> 201 Created
+2. View all users: GET/ api/users -> 200 OK
+3. Get user by ID : GET/ api/users/{id} -> 200 OK
+4. Users by their role : GET /api/users/role{role} -> 200 OK
+5. Update : PUT /api/users/{id} -> 200 OK
+6. Delete : DELETE /api/users/{id} -> 204 No content
 
+**Technologies:** Java 21, Spring Boot, PostgreSQL, Spring Data JPA, Dcoker, Maven
+
+**Endpoints:** "/api/users", "/api/users/{id}", "/api/users/role/{role}"
+
+**Port:** 8081
+**Health:** http://localhost:8081/actuator/health
 
 ### notification-service
+Notification service manages user notification and receives budget warning events through Kafka
 
+- It creates creates, retrieves and deletes notifications
+- Retrieves notifications for specific users
+- Stores notifications in PostgreSQL
+
+1. create a notification : POST /api/notifications -> 201 Created
+2. View all notifications: GET/ api/notifications -> 200 OK
+3. View notifications for a specific user : GET/ api/notifications/users/{userid} -> 200 OK
+4. Delete : DELETE /api/notifications/{id} -> 204 No content
+5. Receive budget warning events through Kafka and save them as notifications
+
+**Technologies:** Java 21, Spring Boot, PostgreSQL, Kafka, Docker, Maven
+
+**Endpoints:** "/api/notifications", "/api/notifications/user/{userId}"
+
+**Port:** 8083
+**Health:** 'http://localhost:8083/actuator/health'
 
 ### project-service
+Project service manages renovation projects and gives the homeowner an overview of each project together with its budget.
 
+* Creates, retrieves, updates and deletes projects, and lists the projects for a specific owner
+* Validates input, for example that a project has a name and that the end date is not before the start date
+* Combines a project with its budget from budget-service through REST, and still returns the project if budget-service is unavailable
+* Publishes a `PROJECT_DELETED` event through Kafka when a project is deleted, so budget-service can delete the project's budget
+* Creates three test projects on startup, matching the budgets in budget-service
+
+Technologies: Java 21, Spring Boot, PostgreSQL, Spring Data JPA, Kafka, Docker, Maven
+Endpoints: "/api/projects", "/api/projects/{id}", "/api/projects/{id}/summary"
+Port: 8085 (only reachable through the gateway) Health: shown in Consul, http://localhost:8500
 
 
 ### budget-service
@@ -94,7 +154,7 @@ flowchart LR
 
 Main user stories:
 
-1. Create a budget for a project: `POST /api/budgets` `{ "projectId": 3, "totalAmount": 60000 }` → `201 Created`
+1. Create a budget for a project: first create a project with `POST /api/projects` `{ "name": "Garden shed", "ownerId": 2 }` → `201 Created` (note the `id`, e.g. `4`), then `POST /api/budgets` `{ "projectId": 4, "totalAmount": 60000 }` → `201 Created`
 2. Get a warning when the budget is almost used: `POST /api/budgets/2/expenses` `{ "description": "Paint", "amount": 2000, "category": "MATERIALS" }` → status `WARNING` and a `budget.warning` event
 3. Cannot create a budget for a project that does not exist: `POST /api/budgets` `{ "projectId": 999, "totalAmount": 1000 }` → `404 Not Found`
 4. The budget is deleted when the project is deleted (`PROJECT_DELETED` from project-service)
