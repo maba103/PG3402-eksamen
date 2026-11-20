@@ -11,7 +11,8 @@ import rebuild.task.messaging.TaskEventPublisher;
 import rebuild.task.model.Task;
 import rebuild.task.model.TaskStatus;
 import rebuild.task.repository.TaskRepository;
-
+import rebuild.task.dto.ProgressResponse;
+import rebuild.task.exception.ContractorNotAssignedException;
 import java.util.List;
 
 @Service
@@ -60,13 +61,43 @@ public class TaskService {
         return TaskResponse.from(getTask(id));
     }
 
+
+    @Transactional(readOnly = true)
+    public ProgressResponse getProgress(Long projectId) {
+        long total = repository.countByProjectId(projectId);
+
+        long planned = repository.countByProjectIdAndStatus(projectId, TaskStatus.PLANNED);
+        long inProgress = repository.countByProjectIdAndStatus(projectId, TaskStatus.IN_PROGRESS);
+        long completed = repository.countByProjectIdAndStatus(projectId, TaskStatus.COMPLETED);
+
+        int percentage = 0;
+
+        if (total > 0) {
+            percentage = (int) Math.round((completed * 100.0) / total);
+        }
+
+        return new ProgressResponse(
+                projectId,
+                total,
+                planned,
+                inProgress,
+                completed,
+                percentage
+        );
+    }
+
     @Transactional
-    public TaskResponse updateStatus(Long id, TaskStatus status) {
+    public TaskResponse updateStatus(Long id, TaskStatus status, Long contractorId) {
         Task task = getTask(id);
+        if (task.getContractorId() == null || !task.getContractorId().equals(contractorId)) {
+            throw new ContractorNotAssignedException(id, contractorId);
+
+        }
         task.setStatus(status);
         Task saved = repository.save(task);
         eventPublisher.publishStatusChanged(saved);
         return TaskResponse.from(saved);
+
     }
 
     @Transactional
