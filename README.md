@@ -114,8 +114,6 @@ Notification service manages user notification and receives budget warning event
 **Health:** 'http://localhost:8083/actuator/health'
 
 ### project-service
-
-### project-service
 Project service manages renovation projects and gives the homeowner an overview of each project together with its budget.
 
 * Creates, retrieves, updates and deletes projects, and lists the projects for a specific owner
@@ -127,7 +125,6 @@ Project service manages renovation projects and gives the homeowner an overview 
 Technologies: Java 21, Spring Boot, PostgreSQL, Spring Data JPA, Kafka, Docker, Maven
 Endpoints: "/api/projects", "/api/projects/{id}", "/api/projects/{id}/summary"
 Port: 8085 (only reachable through the gateway) Health: shown in Consul, http://localhost:8500
-
 
 
 ### budget-service
