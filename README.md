@@ -81,6 +81,13 @@ User service manages users in the application, including homeowners and contract
 - Uses BCrypt to hash passwords
 - Prevents duplicate email addresses
 
+1. create an account : POST /api/users -> 201 Created
+2. View all users: GET/ api/users -> 200 OK
+3. Get user by ID : GET/ api/users/{id} -> 200 OK
+4. Users by their role : GET /api/users/role{role} -> 200 OK
+5. Update : PUT /api/users/{id} -> 200 OK
+6. Delete : DELETE /api/users/{id} -> 204 No content
+
 **Technologies:** Java 21, Spring Boot, PostgreSQL, Spring Data JPA, Dcoker, Maven
 
 **Endpoints:** "/api/users", "/api/users/{id}", "/api/users/role/{role}"
@@ -94,6 +101,12 @@ Notification service manages user notification and receives budget warning event
 - It creates creates, retrieves and deletes notifications
 - Retrieves notifications for specific users
 - Stores notifications in PostgreSQL
+
+1. create a notification : POST /api/notifications -> 201 Created
+2. View all notifications: GET/ api/notifications -> 200 OK
+3. View notifications for a specific user : GET/ api/notifications/users/{userid} -> 200 OK
+4. Delete : DELETE /api/notifications/{id} -> 204 No content
+5. Receive budget warning events through Kafka and save them as notifications
 
 **Technologies:** Java 21, Spring Boot, PostgreSQL, Kafka, Docker, Maven
 
