@@ -46,7 +46,8 @@ flowchart LR
     Kafka -. "budget-events" .-> Notification
     Project -. "project-events" .-> Kafka
     Kafka -. "project-events" .-> Budget
-
+    Task -. "task-events" .-> Kafka
+    Task -. "REST (optional): does the project exist?" .-> Project
     User --> UserDB[(user db)]
     Project --> ProjectDB[(project db)]
     Budget --> BudgetDB[(budget db)]
@@ -165,33 +166,39 @@ Full details, all endpoints, test data and Postman collection: [budget-service/R
 
 ### task-service
 
+Keeps track of the tasks in a renovation project. A task belongs to a project and can be assigned to a contractor. Only the assigned contractor can change the status, and the homeowner can follow the progress of a project. When the status changes, an event is published to Kafka.
 
+```mermaid
+flowchart LR
+    Gateway[api-gateway] --> Task[task-service]
+    Task --> DB[(task-db)]
+    Task -. "REST: does the project exist? (optional)" .-> Project[project-service]
+    Task -. "Kafka: task-events" .-> Notification[notification-service]
+    Consul[Consul] -. "service discovery" .-> Task
+```
+
+Main user stories:
+
+1. Divide a project into tasks: `POST /api/tasks` `{ "projectId": 5, "title": "Living room", "deadline": "2026-12-01" }` → `201 Created` with status `PLANNED`
+2. Assign a contractor to a task: `PATCH /api/tasks/1/contractor?contractorId=3`
+3. The contractor updates the status of an assigned task: `PATCH /api/tasks/1/status?status=COMPLETED&contractorId=3` → `200 OK` and a `TaskCompleted` event on `task-events`
+4. Only the assigned contractor can change the status: the same request with `contractorId=7` → `403 Forbidden`
+5. The homeowner follows the progress of a project: `GET /api/tasks/project/5/progress` → number of tasks per status and the percentage completed
+
+Full details, all endpoints and configuration: [task-service/README.md](task-service/README.md)
 
 ## Decisions, assumptions and simplifications
 
 - One database per service. Services only share data through REST and Kafka.
 - Kafka for events, as in the lectures. Events are plain JSON, so services do not share code, but they must agree on field names such as `projectId`.
 - Budget-service is the only owner of the budget amount. Project-service asks budget-service when it needs the budget, so the numbers are kept in only one place.
-- No login. `ownerId` is sent in the request.
-- No frontend. All functionality is tested through the gateway with Postman.
+- No frontend. All functionality is tested through the gateway with Postman or Swagger.
 - Consul runs in development mode. Values in Consul Key/Value are lost when Consul restarts.
+- No login. `ownerId` and `contractorId` are sent in the request.
+- Only the assigned contractor can change the status of a task. Without a login, the contractor's id is sent as a request parameter, and it is not checked against user-service.
+- Task-service can check that a project exists in project-service (`PROJECT_VALIDATION_ENABLED`). It is off by default, so task-service can be started and tested alone.
+- Task events are published to Kafka after the task is saved, but not in the same transaction. If Kafka is down, the event is lost (a transactional outbox would fix this).
 
-## Why Re-Build fits microservices
-
-A renovation involves different parties (homeowner and contractors) and different areas (projects, tasks, budgets, users and notifications). Each area has its own data and changes at its own pace, so each one is a separate service.
-
-### What fits especially well
-
-- Notifications through events. Budget warnings, deleted projects and task updates are sent through Kafka. The sender does not need to know who receives the event.
-- Independent scaling. Expenses and task updates happen often, projects and users rarely. Budget-service and task-service can run in more instances without scaling the rest.
-- Failures stay local. If budget-service is down, project-service still shows the project.
-- Clear data ownership. Each service has its own database. Only budget-service stores the budget amount.
-
-### Changes from the arbeidskrav and When the project grows
-
-- We went beyond the planned minimum solution and implemented most of the prototype: contractor assignment, budget tracking, notifications and the API gateway.
-  
-- New features, such as contractor offers, photo upload and deadline reminders, can be added as new services or new events, without changing the existing ones.
-- More users means more load on budgets and tasks, and those services can be scaled behind the gateway.
-
-For the current size, a monolith would be simpler. The microservice structure pays off as the application grow
+## Changes from the arbeidskrav
+- Task-service gets a progress endpoint (`GET /api/tasks/project/{id}/progress`), so the homeowner can follow the renovation. This was not in the arbeidskrav.
+- Only the assigned contractor can change the status of a task.
