@@ -199,6 +199,20 @@ Full details, all endpoints and configuration: [task-service/README.md](task-ser
 - Task-service can check that a project exists in project-service (`PROJECT_VALIDATION_ENABLED`). It is off by default, so task-service can be started and tested alone.
 - Task events are published to Kafka after the task is saved, but not in the same transaction. If Kafka is down, the event is lost (a transactional outbox would fix this).
 
+## Why Re-Build fits microservices
+
+A renovation involves different parties (homeowner and contractors) and different areas (projects, tasks, budgets, users and notifications). Each area has its own data and changes at its own pace, so each one is a separate service.
+
+### What fits especially well
+
+- Notifications through events. Budget warnings, deleted projects and task updates are sent through Kafka. The sender does not need to know who receives the event.
+- Independent scaling. Expenses and task updates happen often, projects and users rarely. Budget-service and task-service can run in more instances without scaling the rest.
+- Failures stay local. If budget-service is down, project-service still shows the project.
+- Clear data ownership. Each service has its own database. Only budget-service stores the budget amount.
+
 ## Changes from the arbeidskrav
+
+We went beyond the planned minimum solution and implemented most of the prototype: contractor assignment, budget tracking, project progress in percent, notifications and the API gateway. Docker, originally a best case feature, became the way the whole system is run.
+
 - Task-service gets a progress endpoint (`GET /api/tasks/project/{id}/progress`), so the homeowner can follow the renovation. This was not in the arbeidskrav.
 - Only the assigned contractor can change the status of a task.
