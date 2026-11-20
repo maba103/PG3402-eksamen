@@ -21,4 +21,8 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleUnavailable(ProjectServiceUnavailableException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
     }
+    @ExceptionHandler(ContractorNotAssignedException.class)
+    public ProblemDetail handleNotAssigned(ContractorNotAssignedException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
 }

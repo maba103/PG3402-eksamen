@@ -9,6 +9,7 @@ import rebuild.task.dto.TaskRequest;
 import rebuild.task.dto.TaskResponse;
 import rebuild.task.model.TaskStatus;
 import rebuild.task.service.TaskService;
+import rebuild.task.dto.ProgressResponse;
 
 import java.util.List;
 
@@ -45,13 +46,19 @@ public class TaskController {
 
     @Operation(summary = "Update the status of a task")
     @PatchMapping("/{id}/status")
-    public TaskResponse updateStatus(@PathVariable Long id, @RequestParam TaskStatus status) {
-        return service.updateStatus(id, status);
+    public TaskResponse updateStatus(@PathVariable Long id, @RequestParam TaskStatus status, @RequestParam Long contractorId) {
+        return service.updateStatus(id,status, contractorId);
     }
 
     @Operation(summary = "Assign a contractor to a task")
     @PatchMapping("/{id}/contractor")
     public TaskResponse assignContractor(@PathVariable Long id, @RequestParam Long contractorId) {
         return service.assignContractor(id, contractorId);
+    }
+
+    @Operation(summary = "Get project progress")
+    @GetMapping("/project/{projectId}/progress")
+    public ProgressResponse getProgress(@PathVariable Long projectId) {
+        return service.getProgress(projectId);
     }
 }
