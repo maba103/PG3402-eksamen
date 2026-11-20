@@ -100,7 +100,7 @@ Notification service manages user notification and receives budget warning event
 **Endpoints:** "/api/notifications", "/api/notifications/user/{userId}"
 
 **Port:** 8083
-**Health:** 'http://localhost:8083/ctuator/health'
+**Health:** 'http://localhost:8083/actuator/health'
 
 ### project-service
 
